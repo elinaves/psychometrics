@@ -29,7 +29,7 @@ a<-data.frame(row=as.numeric(0), column=as.numeric(0), result=as.numeric(0))
 for(i in 1:(n-2)) {
   for(j in 2:(m-1)){
 if(x[i, j] > x[i+1,j-1] & x[i+1, j+1] > x[i+2, j]) {
-  if(x[i+1, j+1] > x[i+2, j-1]) {
+  if(x[i, j+1] > x[i+2, j-1]) {
     rivi <- c(i, j, "PASS")
     a <- rbind(a, rivi)
   } else {
