@@ -11,7 +11,7 @@ data <- data[order(data$totalscore),] ## order people according to totalscore
 data <- aggregate(data, by=list(-data$totalscore), mean) ## calculate mean score for each group with particular total score
 data <- data[,2:6]
 
-## function for testing double cancellation axiom
+## function for testing double cancellation axiom of conjoint measurement
 ## outcome is evaluation of whether double cancellation is fulfilled across matrix
 ## if axioms fail to be fulfilled, locations are shown 
 ## data[i,j] marks the cell at the top of the arrow marking first antecedent
