@@ -1,17 +1,49 @@
-## example of preparing data
+## example of preparing data via jml estimation of item difficulty and ability
+## packages needed
+##install.packages("sirt")
+##library(sirt)
 
-install.packages("sirt")
-library(sirt)
-estimate <- rasch.jml(LSAT) ## joint maximum likelihood estimation of parameters ? can I control discrimination ?
+## test with LSAT in package ltm
+## install.packages("ltm")
+##library(ltm)
+
+preparedata1 <- function(x) {
+estimate <- rasch.jml(x) ## joint maximum likelihood estimation of parameters ? should I control discrimination ?
 items <- estimate$item
-itemorder <- LSAT[,order(-items$itemdiff)] 
+itemorder <- x[,order(-items$itemdiff)] 
 totalscore <- rowSums(itemorder) ## calculate totalscores for each person
 data <- cbind(itemorder, totalscore)
 data <- data[order(data$totalscore),] ## order people according to totalscore
 data <- aggregate(data, by=list(-data$totalscore), mean) ## calculate mean score for each group with particular total score
-data <- data[,2:6]
+n <- ncol(x)
+data <- data[,2:(n+1)]
+return(data)
+}
 
-## function for testing double cancellation axiom of conjoint measurement
+## example of preparing data via calculation of proportion of correct responses
+## test with LSAT in package ltm
+## install.packages("ltm")
+##library(ltm)
+preparedata2 <- function(x) {
+totalscore2 <- rowSums(x)
+xnew <- cbind(x, totalscore2)
+orderedx <- xnew[order(xnew$totalscore2),]
+correctresponses <- aggregate(orderedx, by=list(orderedx$totalscore2), sum)
+correctresponses <- correctresponses[order(-correctresponses$Group.1),]
+n <- ncol(x)
+correctresponses <- correctresponses[,2:(n+1)]
+totalresponses <- correctresponses[FALSE,]
+for(i in 0:n) {
+  totalresponses[(n+1-i),] <- rep(nrow(subset(orderedx,orderedx$totalscore2 == i)), n)
+}
+proportioncorrect <- correctresponses/totalresponses
+data2 <- proportioncorrect[,order(colMeans(x))]
+return(data2)
+}
+
+
+
+## function for testing double cancellation axiom
 ## outcome is evaluation of whether double cancellation is fulfilled across matrix
 ## if axioms fail to be fulfilled, locations are shown 
 ## data[i,j] marks the cell at the top of the arrow marking first antecedent
