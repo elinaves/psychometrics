@@ -1,29 +1,11 @@
 ## example of preparing data via jml estimation of item difficulty and ability
-## packages needed
-##install.packages("sirt")
-##library(sirt)
 
-## test with LSAT in package ltm
-## install.packages("ltm")
-##library(ltm)
+library(ltm)
+install.packages("sirt")
+library(sirt)
 
-preparedata1 <- function(x) {
-estimate <- rasch.jml(x) ## joint maximum likelihood estimation of parameters ? should I control discrimination ?
-items <- estimate$item
-itemorder <- x[,order(-items$itemdiff)] 
-totalscore <- rowSums(itemorder) ## calculate totalscores for each person
-data <- cbind(itemorder, totalscore)
-data <- data[order(data$totalscore),] ## order people according to totalscore
-data <- aggregate(data, by=list(-data$totalscore), mean) ## calculate mean score for each group with particular total score
-n <- ncol(x)
-data <- data[,2:(n+1)]
-return(data)
-}
 
 ## example of preparing data via calculation of proportion of correct responses
-## test with LSAT in package ltm
-## install.packages("ltm")
-##library(ltm)
 preparedata2 <- function(x) {
 totalscore2 <- rowSums(x)
 xnew <- cbind(x, totalscore2)
@@ -41,6 +23,20 @@ data2 <- proportioncorrect[,order(colMeans(x))]
 return(data2)
 }
 
+preparedata3 <- function(x) {
+  estimate <- rasch.jml(x) ## joint maximum likelihood estimation of parameters 
+  items <- estimate$item
+  ordereditems <- x[,order(-items$itemdiff)] 
+  ## the persons are ordered according to theta in estimate$person
+  persons <- estimate$person
+  theta <- persons$theta
+  data <- cbind(ordereditems, theta)
+  data <- data[order(data$theta),] ## order people according to theta
+  data <- aggregate(data, by=list(-data$theta), mean) ## calculate mean score for each group with particular total score
+  n <- ncol(x)
+  data <- data[,2:(n+1)]
+  return(data)
+}  
 
 
 ## function for testing double cancellation axiom
@@ -97,4 +93,10 @@ if(aretherenas == TRUE) {
 }
 
 }
-    
+
+## Compare to
+##library(ltm)
+#install.packages("ConjointChecks")
+#library(ConjointChecks)
+#lsatprepare <- PrepareChecks(LSAT)
+#checkedlsat <- ConjointChecks(lsatprepare$N, lsatprepare$n, n.3mat = 1)
