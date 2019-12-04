@@ -1,4 +1,57 @@
-  
+library(ltm)
+install.packages("sirt")
+library(sirt)
+
+## preparing data via calculation of proportion of correct responses
+preparedata.freq <- function(x) {
+totalscore2 <- rowSums(x)
+xnew <- cbind(x, totalscore2)
+orderedx <- xnew[order(xnew$totalscore2),]
+correctresponses <- aggregate(orderedx, by=list(orderedx$totalscore2), sum)
+correctresponses <- correctresponses[order(-correctresponses$Group.1),]
+n <- ncol(x)
+correctresponses <- correctresponses[,2:(n+1)]
+totalresponses <- correctresponses[FALSE,]
+for(i in 0:n) {
+  totalresponses[(n+1-i),] <- rep(nrow(subset(orderedx,orderedx$totalscore2 == i)), n)
+}
+proportioncorrect <- correctresponses/totalresponses
+data2 <- proportioncorrect[,order(colMeans(x))]
+return(data2)
+}
+
+## prepare with jml
+preparedata.jml <- function(x) {
+  estimate <- rasch.jml(x) ## joint maximum likelihood estimation of parameters 
+  items <- estimate$item
+  ordereditems <- x[,order(-items$itemdiff)] 
+  ## the persons are ordered according to theta in estimate$person
+  persons <- estimate$person
+  theta <- persons$theta
+  data <- cbind(ordereditems, theta)
+  data <- data[order(data$theta),] ## order people according to theta
+  data <- aggregate(data, by=list(-data$theta), mean) ## calculate mean score for each group with particular total score
+  n <- ncol(x)
+  data <- data[,2:(n+1)]
+  return(data)
+}  
+
+## prepare with mml
+preparedata.mml <- function(x) {
+  estimate <- rasch.mml2(x) ## joint maximum likelihood estimation of parameters 
+  items <- estimate$item
+  ordereditems <- x[,order(-items$b)] 
+  ## the persons are ordered according to theta in estimate$person
+  persons <- estimate$person
+  theta <- persons$EAP
+  data <- cbind(ordereditems, theta)
+  data <- data[order(data$theta),] ## order people according to theta
+  data <- aggregate(data, by=list(-data$theta), mean) ## calculate mean score for each group with particular total score
+  n <- ncol(x)
+  data <- data[,2:(n+1)]
+  return(data)
+} 
+
 ## function for testing double cancellation axiom
 ## outcome is evaluation of whether double cancellation is fulfilled across matrix
 ## if axioms fail to be fulfilled, locations are shown 
