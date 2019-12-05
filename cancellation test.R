@@ -30,7 +30,7 @@ preparedata.jml <- function(x) {
   theta <- persons$theta
   data <- cbind(ordereditems, theta)
   data <- data[order(data$theta),] ## order people according to theta
-  data <- aggregate(data, by=list(-data$theta), mean) ## calculate mean score for each group with particular total score
+  data <- aggregate(data, by=list(-data$theta), mean) ## calculate mean score for each group with particular ability
   n <- ncol(x)
   data <- data[,2:(n+1)]
   return(data)
@@ -44,9 +44,10 @@ preparedata.mml <- function(x) {
   ## the persons are ordered according to theta in estimate$person
   persons <- estimate$person
   theta <- persons$EAP
-  data <- cbind(ordereditems, theta)
+  rounded <- round(theta, 3)
+  data <- cbind(ordereditems, theta, rounded)
   data <- data[order(data$theta),] ## order people according to theta
-  data <- aggregate(data, by=list(-data$theta), mean) ## calculate mean score for each group with particular total score
+  data <- aggregate(data, by=list(-data$rounded), mean) ## calculate mean score for each group with particular ability
   n <- ncol(x)
   data <- data[,2:(n+1)]
   return(data)
